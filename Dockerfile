@@ -39,9 +39,9 @@ RUN set -x \
     && apt-get purge -y --auto-remove dirmngr gpg wget
 
 
-ENV HAPROXY_MAJOR=2.0 \
-    HAPROXY_VERSION=2.0.17 \
-    HAPROXY_MD5=786a967c73cc1455c938d42fbe333bfe
+ENV HAPROXY_MAJOR=2.2 \
+    HAPROXY_VERSION=2.2.4 \
+    HAPROXY_MD5=c2717fcff503ef8574cd6395e2ca4d24
 
 COPY requirements.txt /marathon-lb/
 
@@ -96,6 +96,13 @@ RUN set -x \
     && apt-get purge -y --auto-remove $buildDeps \
 # Purge of python3-dev will delete python3 also
     && apt-get update && apt-get install -y --no-install-recommends python3
+    
+# Install CMRE certs from /etc/pki/tls
+# NOTE: This assumes ansible-playbook.centos7-basic has installed internal certs
+COPY /etc/pki/tls/certs/star_tmvse_com.bundle.crt.pem /tmp
+COPY /etc/pki/tls/private/star_tmvse_com.key.pem /tmp
+# Construct a key/bundlecert in haproxy default location.
+RUN cat /tmp/star_tmvse_com.key.pem /tmp/star_tmvse_com.bundle.crt.pem > /etc/ssl/cert.pem
 
 COPY  . /marathon-lb
 
